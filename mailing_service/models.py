@@ -40,15 +40,15 @@ class Mailing(models.Model):
     """Модель создания рассылки"""
     objects = None
 
-    date_start = models.DateTimeField(auto_now_add=True, verbose_name="Время отправки")
-    date_end = models.DateTimeField(auto_now=True, verbose_name="Время окончания отправки")
-    status = models.CharField(max_length=9, verbose_name='Статус',
-                              choices=[('created', 'Создана'), ('started', 'Запущена'), ('finished', 'Завершена')])
+    date_start = models.DateTimeField(blank=True, null=True, verbose_name="Время отправки")
+    date_end = models.DateTimeField(blank=True, null=True, verbose_name="Время окончания отправки")
+    status = models.CharField(max_length=9, verbose_name='Статус', default='Создана',
+                              choices=[('Создана', 'Создана'), ('Запущена', 'Запущена'), ('Завершена', 'Завершена')])
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='messages', verbose_name='Письмо')
     user_mail = models.ManyToManyField(UserMail, related_name='users', verbose_name='Получатели')
 
     def __str__(self):
-        return f"Рассылка в статусе: {self.status}"
+        return f"Статус '{self.status}' id {self.id}"
 
     class Meta:
         verbose_name = 'Рассылка'

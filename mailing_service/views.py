@@ -15,7 +15,7 @@ class MailingView(ListView):
         context = super().get_context_data(**kwargs)
 
         context['user_mail'] = UserMail.objects.all()
-        context['mailing_all_started'] = Mailing.objects.filter(status='started')
+        context['mailing_all_started'] = Mailing.objects.filter(status='Запущена')
 
         return context
 
@@ -43,7 +43,7 @@ class MailingUpdateView(UpdateView):
     template_name = "mailing_service/mailing_add.html"
     context_object_name = "mailing_update"
 
-    fields = "__all__"
+    form_class = MailingForm
 
     def get_success_url(self):
         return reverse('mailing_service:mailing_detail', args=[self.kwargs.get('pk')])
@@ -81,7 +81,7 @@ class UserMailUpdateView(UpdateView):
     template_name = "mailing_service/user_mail_create.html"
     context_object_name = "user_mail_update"
 
-    fields = "__all__"
+    form_class = UserMailForm
 
     def get_success_url(self):
         return reverse('mailing_service:user_mail_detail', args=[self.kwargs.get('pk')])
@@ -119,7 +119,7 @@ class MessageUpdateView(UpdateView):
     template_name = "mailing_service/message_create.html"
     context_object_name = "message_update"
 
-    fields = "__all__"
+    form_class = MessageForm
 
     def get_success_url(self):
         return reverse('mailing_service:message_detail', args=[self.kwargs.get('pk')])
