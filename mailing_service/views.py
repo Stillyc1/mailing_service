@@ -41,7 +41,7 @@ class MailingUpdateView(UpdateView):
     """Класс представления обновления рассылки"""
     model = Mailing
     template_name = "mailing_service/mailing_add.html"
-    context_object_name = "mailing_add"
+    context_object_name = "mailing_update"
 
     fields = "__all__"
 
@@ -58,11 +58,39 @@ class MailingDeleteView(DeleteView):
     success_url = reverse_lazy('mailing_service:home')
 
 
-class UserMailView(ListView):
-    """Класс представления всех получателей рассылки"""
+class UserMailDetailView(DetailView):
+    """Класс представления детально получателя рассылки"""
     model = UserMail
-    template_name = "mailing_service/home.html"
-    context_object_name = "user_mail"
+    template_name = "mailing_service/user_mail_detail.html"
+    context_object_name = "user_mail_detail"
+
+
+class UserMailCreateView(CreateView):
+    """Класс представления создания получателей рассылки"""
+    model = UserMail
+    template_name = "mailing_service/user_mail_create.html"
+    context_object_name = "user_mail_create"
+
+
+class UserMailUpdateView(UpdateView):
+    """Класс представления обновления получателей рассылки"""
+    model = UserMail
+    template_name = "mailing_service/user_mail_create.html"
+    context_object_name = "user_mail_update"
+
+    fields = "__all__"
+
+    def get_success_url(self):
+        return reverse('mailing_service:user_mail_detail', args=[self.kwargs.get('pk')])
+
+
+class UserMailDeleteView(DeleteView):
+    """Класс представления удаления получателей рассылки"""
+    model = UserMail
+    template_name = "mailing_service/user_mail_confirm_delete.html"
+    context_object_name = "user_mail_delete"
+
+    success_url = reverse_lazy('mailing_service:home')
 
 
 class MessageView(ListView):
