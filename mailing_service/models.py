@@ -28,7 +28,7 @@ class Message(models.Model):
     body_letter = models.TextField(verbose_name='Тело_письма')
 
     def __str__(self):
-        return f"{self.head_letter}: тема письма"
+        return f"{self.head_letter}"
 
     class Meta:
         verbose_name = 'Письмо'
@@ -42,7 +42,7 @@ class Mailing(models.Model):
 
     date_start = models.DateTimeField(auto_now_add=True, verbose_name="Время отправки")
     date_end = models.DateTimeField(auto_now=True, verbose_name="Время окончания отправки")
-    status = models.CharField(max_length=9, verbose_name="Статус",
+    status = models.CharField(max_length=9, verbose_name='Статус',
                               choices=[('created', 'Создана'), ('started', 'Запущена'), ('finished', 'Завершена')])
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='messages', verbose_name='Письмо')
     user_mail = models.ManyToManyField(UserMail, related_name='users', verbose_name='Получатели')
@@ -53,7 +53,7 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
-        ordering = ['date_start', 'date_end', 'status', 'message']
+        ordering = ['date_start', 'date_end', 'status', 'message',]
 
 
 class MailingAttempt(models.Model):

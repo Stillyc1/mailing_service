@@ -9,7 +9,7 @@
     <p class="lead">SendMail - это отличный вариант создания кампаний для презентаций ваших продуктов и рекламных
         рассылок</p>
     {% if user.is_authenticated %}
-    <a class="btn btn-lg btn-block btn-outline-primary" href="#">Создать рассылку</a>
+    <a class="btn btn-lg btn-block btn-outline-primary" href="{% url 'mailing_service:mailing_add' %}">Создать рассылку</a>
     {% endif %}
 </div>
 
@@ -35,7 +35,7 @@
                 <h4 class="my-0 font-weight-normal">Активные рассылки</h4>
             </div>
             <div class="card-body">
-                <p class="card-title pricing-card-title">Всего: шт.</p>
+                <p class="card-title pricing-card-title">Всего: {{ mailing_all_started.count }} шт.</p>
             </div>
         </div>
     </div>
