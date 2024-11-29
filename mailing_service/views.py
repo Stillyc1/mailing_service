@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
 
-from mailing_service.forms import MailingForm
+from mailing_service.forms import MailingForm, UserMailForm, MessageForm
 from mailing_service.models import UserMail, Mailing, Message, MailingAttempt
 
 
@@ -71,6 +71,9 @@ class UserMailCreateView(CreateView):
     template_name = "mailing_service/user_mail_create.html"
     context_object_name = "user_mail_create"
 
+    form_class = UserMailForm
+    success_url = reverse_lazy('mailing_service:home')
+
 
 class UserMailUpdateView(UpdateView):
     """Класс представления обновления получателей рассылки"""
@@ -93,11 +96,42 @@ class UserMailDeleteView(DeleteView):
     success_url = reverse_lazy('mailing_service:home')
 
 
-class MessageView(ListView):
-    """Класс представления Всех писем"""
+class MessageDetailView(DetailView):
+    """Класс представления писем"""
     model = Message
-    template_name = "mailing_service/home.html"
-    context_object_name = "message"
+    template_name = "mailing_service/message_detail.html"
+    context_object_name = "message_detail"
+
+
+class MessageCreateView(CreateView):
+    """Класс представления создания писем"""
+    model = Message
+    template_name = "mailing_service/message_create.html"
+    context_object_name = "message_create"
+
+    form_class = MessageForm
+    success_url = reverse_lazy('mailing_service:home')
+
+
+class MessageUpdateView(UpdateView):
+    """Класс представления обновления писем"""
+    model = Message
+    template_name = "mailing_service/message_create.html"
+    context_object_name = "message_update"
+
+    fields = "__all__"
+
+    def get_success_url(self):
+        return reverse('mailing_service:message_detail', args=[self.kwargs.get('pk')])
+
+
+class MessageDeleteView(DeleteView):
+    """Класс представления удаления писем"""
+    model = Message
+    # template_name = "mailing_service/message_confirm_delete.html"
+    context_object_name = "message_delete"
+
+    success_url = reverse_lazy('mailing_service:home')
 
 
 class MailingAttemptView(ListView):
