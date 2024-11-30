@@ -41,10 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     'mailing_service',
     'users',
-    # connect catalog
 ]
 
 MIDDLEWARE = [
@@ -141,10 +141,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AUTH_USER_MODEL = 'users.CustomUser'
-#
-# LOGIN_REDIRECT_URL = 'catalog:show_home'
-# LOGIN_URL = 'users:login'
+AUTH_USER_MODEL = 'users.CustomUser'
+
+LOGIN_REDIRECT_URL = 'mailing_service:home'
+LOGIN_URL = 'users:login'
+LOGOUT_REDIRECT_URL = 'mailing_service:home'
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
@@ -163,3 +164,5 @@ if CACHE_ENABLED:
             'LOCATION': os.getenv('LOCATION'),
         }
     }
+
+SITE_ID = 1
