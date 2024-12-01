@@ -1,3 +1,5 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
@@ -19,10 +21,17 @@ class MailingView(ListView):
         context["user_mail"] = UserMail.objects.all()
         context["mailing_all_started"] = Mailing.objects.filter(status="Запущена")
 
+        if self.request.user.is_authenticated:
+            context['user_usermail'] = UserMail.objects.filter(owner=self.request.user)
+            context['user_message'] = Message.objects.filter(owner=self.request.user)
+            context['user_mailing_started'] = Mailing.objects.filter(owner=self.request.user, status='Запущена')
+            context['user_mailing'] = Mailing.objects.filter(owner=self.request.user)
+            context['user_mailingattempt'] = MailingAttempt.objects.filter(owner=self.request.user)
+
         return context
 
 
-class MailingCreateView(CreateView):
+class MailingCreateView(LoginRequiredMixin, CreateView):
     """Класс представления создания рассылки"""
 
     model = Mailing
@@ -32,16 +41,30 @@ class MailingCreateView(CreateView):
     form_class = MailingForm
     success_url = reverse_lazy("mailing_service:home")
 
+    def form_valid(self, form):
+        mailing = form.save()
+        user = self.request.user
+        mailing.owner = user
+        mailing.save()
 
-class MailingDetailView(DetailView):
+        return super().form_valid(form)
+
+
+class MailingDetailView(LoginRequiredMixin, DetailView):
     """Класс представления детальной рассылки"""
 
     model = Mailing
     template_name = "mailing_service/mailing_detail.html"
     context_object_name = "mailing_detail"
 
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        if self.object.owner == self.request.user:
+            return self.object
+        raise PermissionDenied
 
-class MailingUpdateView(UpdateView):
+
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     """Класс представления обновления рассылки"""
 
     model = Mailing
@@ -53,8 +76,18 @@ class MailingUpdateView(UpdateView):
     def get_success_url(self):
         return reverse("mailing_service:mailing_detail", args=[self.kwargs.get("pk")])
 
+    def get_form_class(self):
+        """
+        Проверка чтобы пользователь был владельцем продукта и тогда может его изменять
+        и если у пользовтаеля есть право can_unpublish_product
+        """
+        user = self.request.user
+        if user == self.object.owner:
+            return MailingForm
+        raise PermissionDenied
 
-class MailingDeleteView(DeleteView):
+
+class MailingDeleteView(LoginRequiredMixin, DeleteView):
     """Класс представления удаления рассылки"""
 
     model = Mailing
@@ -63,16 +96,28 @@ class MailingDeleteView(DeleteView):
 
     success_url = reverse_lazy("mailing_service:home")
 
+    def get_form_class(self):
+        user = self.request.user
+        if user == self.object.owner:
+            return super().get_form_class()
+        raise PermissionDenied
 
-class UserMailDetailView(DetailView):
+
+class UserMailDetailView(LoginRequiredMixin, DetailView):
     """Класс представления детально получателя рассылки"""
 
     model = UserMail
     template_name = "mailing_service/user_mail_detail.html"
     context_object_name = "user_mail_detail"
 
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        if self.object.owner == self.request.user:
+            return self.object
+        raise PermissionDenied
 
-class UserMailCreateView(CreateView):
+
+class UserMailCreateView(LoginRequiredMixin, CreateView):
     """Класс представления создания получателей рассылки"""
 
     model = UserMail
@@ -82,8 +127,16 @@ class UserMailCreateView(CreateView):
     form_class = UserMailForm
     success_url = reverse_lazy("mailing_service:home")
 
+    def form_valid(self, form):
+        mailing = form.save()
+        user = self.request.user
+        mailing.owner = user
+        mailing.save()
 
-class UserMailUpdateView(UpdateView):
+        return super().form_valid(form)
+
+
+class UserMailUpdateView(LoginRequiredMixin, UpdateView):
     """Класс представления обновления получателей рассылки"""
 
     model = UserMail
@@ -95,8 +148,18 @@ class UserMailUpdateView(UpdateView):
     def get_success_url(self):
         return reverse("mailing_service:user_mail_detail", args=[self.kwargs.get("pk")])
 
+    def get_form_class(self):
+        """
+        Проверка чтобы пользователь был владельцем продукта и тогда может его изменять
+        и если у пользовтаеля есть право can_unpublish_product
+        """
+        user = self.request.user
+        if user == self.object.owner:
+            return UserMailForm
+        raise PermissionDenied
 
-class UserMailDeleteView(DeleteView):
+
+class UserMailDeleteView(LoginRequiredMixin, DeleteView):
     """Класс представления удаления получателей рассылки"""
 
     model = UserMail
@@ -105,16 +168,38 @@ class UserMailDeleteView(DeleteView):
 
     success_url = reverse_lazy("mailing_service:home")
 
+    def get_form_class(self):
+        user = self.request.user
+        if user == self.object.owner:
+            return super().get_form_class()
+        raise PermissionDenied
 
-class MessageDetailView(DetailView):
+
+class MessageDetailView(LoginRequiredMixin, DetailView):
     """Класс представления писем"""
 
     model = Message
     template_name = "mailing_service/message_detail.html"
     context_object_name = "message_detail"
 
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        if self.object.owner == self.request.user:
+            return self.object
+        raise PermissionDenied
 
-class MessageCreateView(CreateView):
+    # def get_queryset(self):
+    #     """
+    #     Проверка чтобы пользователь был владельцем продукта и тогда может его изменять
+    #     и если у пользовтаеля есть право can_unpublish_product
+    #     """
+    #     user = self.request.user
+    #     if user == self.object.owner:
+    #         return super().queryset()
+    #     raise PermissionDenied
+
+
+class MessageCreateView(LoginRequiredMixin, CreateView):
     """Класс представления создания писем"""
 
     model = Message
@@ -124,8 +209,16 @@ class MessageCreateView(CreateView):
     form_class = MessageForm
     success_url = reverse_lazy("mailing_service:home")
 
+    def form_valid(self, form):
+        mailing = form.save()
+        user = self.request.user
+        mailing.owner = user
+        mailing.save()
 
-class MessageUpdateView(UpdateView):
+        return super().form_valid(form)
+
+
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     """Класс представления обновления писем"""
 
     model = Message
@@ -137,20 +230,41 @@ class MessageUpdateView(UpdateView):
     def get_success_url(self):
         return reverse("mailing_service:message_detail", args=[self.kwargs.get("pk")])
 
+    def get_form_class(self):
+        """
+        Проверка чтобы пользователь был владельцем продукта и тогда может его изменять
+        и если у пользовтаеля есть право can_unpublish_product
+        """
+        user = self.request.user
+        if user == self.object.owner:
+            return MessageForm
+        raise PermissionDenied
 
-class MessageDeleteView(DeleteView):
+
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     """Класс представления удаления писем"""
 
     model = Message
-    # template_name = "mailing_service/message_confirm_delete.html"
     context_object_name = "message_delete"
 
     success_url = reverse_lazy("mailing_service:home")
 
+    def get_form_class(self):
+        user = self.request.user
+        if user == self.object.owner:
+            return super().get_form_class()
+        raise PermissionDenied
 
-class MailingAttemptView(ListView):
+
+class MailingAttemptView(LoginRequiredMixin, ListView):
     """Класс представления Всех рассылок на главной странице"""
 
     model = MailingAttempt
     template_name = "mailing_service/home.html"
     context_object_name = "mailing_attempt"
+
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        if self.object.owner == self.request.user:
+            return self.object
+        raise PermissionDenied
