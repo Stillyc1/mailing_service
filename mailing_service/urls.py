@@ -4,7 +4,7 @@ from .views import (MailingCreateView, MailingDeleteView, MailingDetailView,
                     MailingUpdateView, MailingView, MessageCreateView,
                     MessageDeleteView, MessageDetailView, MessageUpdateView,
                     UserMailCreateView, UserMailDeleteView, UserMailDetailView,
-                    UserMailUpdateView)
+                    UserMailUpdateView, MailingAttemptView, UserRegisterView, UserBanView)
 
 app_name = "mailing_service"
 
@@ -26,4 +26,8 @@ urlpatterns = [
     path("message_list/", MessageDetailView.as_view(), name="message_detail"),
     path("<int:pk>/update_message/", MessageUpdateView.as_view(), name="message_update"),
     path("<int:pk>/delete_message/", MessageDeleteView.as_view(), name="message_delete"),
+
+    path("mailing_attempt/", MailingAttemptView.as_view(), name="mailing_attempt"),
+    path("users_list/", UserRegisterView.as_view(), name="users_register"),
+    path("<int:pk>/users_ban/", UserBanView.as_view(), name="users_ban"),
 ]

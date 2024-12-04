@@ -20,6 +20,7 @@
     <table class="table table-striped">
         <thead>
         <tr>
+            <th scope="col">№</th>
             <th scope="col">Дата первой отправки</th>
             <th scope="col">Дата окончания</th>
             <th scope="col">Статус</th>
@@ -29,13 +30,14 @@
         </tr>
         </thead>
         <tbody>
-        {% for mailing in mailing_owner_user %}
+        {% for mailing in mailing_detail %}
         <tr>
+            <td>{{ mailing.id }}</td>
             <td>{{ mailing.date_start }}</td>
             <td>{{ mailing.date_end }}</td>
             <td>{{ mailing.status }}</td>
             <td>{{ mailing.message }}</td>
-            <td>{{ mailing.user_mail }}</td>
+            <td>{{ mailing.user_mail.all }}</td>
             <td>
                 {% if user.is_authenticated %}
                 <a href="{% url 'mailing_service:mailing_update' mailing.pk%}" class="text-decoration-none">
