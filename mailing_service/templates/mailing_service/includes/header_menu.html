@@ -5,9 +5,9 @@
             <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
                 <li><a href="{% url 'mailing_service:home' %}" class="nav-link px-2 text-secondary">Главная</a></li>
                 {% if user.is_authenticated %}
-                    <li><a href="#" class="nav-link px-2 text-white">Сообщения</a></li>
-                    <li><a href="#" class="nav-link px-2 text-white">Получатели</a></li>
-                    <li><a href="#" class="nav-link px-2 text-white">Рассылки</a></li>
+                    <li><a href="{% url 'mailing_service:message_detail' %}" class="nav-link px-2 text-white">Сообщения</a></li>
+                    <li><a href="{% url 'mailing_service:user_mail_detail' %}" class="nav-link px-2 text-white">Получатели</a></li>
+                    <li><a href="{% url 'mailing_service:mailing_detail' %}" class="nav-link px-2 text-white">Рассылки</a></li>
                     <li><a href="#" class="nav-link px-2 text-white">Статистика</a></li>
                 {% endif %}
             </ul>

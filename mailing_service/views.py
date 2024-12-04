@@ -39,7 +39,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     context_object_name = "mailing_add"
 
     form_class = MailingForm
-    success_url = reverse_lazy("mailing_service:home")
+    success_url = reverse_lazy("mailing_service:mailing_detail")
 
     def form_valid(self, form):
         mailing = form.save()
@@ -50,18 +50,26 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MailingDetailView(LoginRequiredMixin, DetailView):
+class MailingDetailView(LoginRequiredMixin, ListView):
     """Класс представления детальной рассылки"""
 
     model = Mailing
     template_name = "mailing_service/mailing_detail.html"
     context_object_name = "mailing_detail"
 
-    def get_object(self, queryset=None):
-        self.object = super().get_object(queryset)
-        if self.object.owner == self.request.user:
-            return self.object
-        raise PermissionDenied
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            context['mailing_owner_user'] = Mailing.objects.filter(owner=self.request.user)
+
+        return context
+
+    # def get_object(self, queryset=None):
+    #     self.object = super().get_object(queryset)
+    #     if self.object.owner == self.request.user:
+    #         return self.object
+    #     raise PermissionDenied
 
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
@@ -74,7 +82,7 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
     form_class = MailingForm
 
     def get_success_url(self):
-        return reverse("mailing_service:mailing_detail", args=[self.kwargs.get("pk")])
+        return reverse("mailing_service:mailing_detail")
 
     def get_form_class(self):
         """
@@ -94,7 +102,7 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "mailing_service/mailing_delete.html"
     context_object_name = "mailing_delete"
 
-    success_url = reverse_lazy("mailing_service:home")
+    success_url = reverse_lazy("mailing_service:mailing_detail")
 
     def get_form_class(self):
         user = self.request.user
@@ -103,18 +111,26 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
         raise PermissionDenied
 
 
-class UserMailDetailView(LoginRequiredMixin, DetailView):
+class UserMailDetailView(LoginRequiredMixin, ListView):
     """Класс представления детально получателя рассылки"""
 
     model = UserMail
     template_name = "mailing_service/user_mail_detail.html"
     context_object_name = "user_mail_detail"
 
-    def get_object(self, queryset=None):
-        self.object = super().get_object(queryset)
-        if self.object.owner == self.request.user:
-            return self.object
-        raise PermissionDenied
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            context['user_mail_owner_user'] = UserMail.objects.filter(owner=self.request.user)
+
+        return context
+
+    # def get_object(self, queryset=None):
+    #     self.object = super().get_object(queryset)
+    #     if self.object.owner == self.request.user:
+    #         return self.object
+    #     raise PermissionDenied
 
 
 class UserMailCreateView(LoginRequiredMixin, CreateView):
@@ -125,7 +141,7 @@ class UserMailCreateView(LoginRequiredMixin, CreateView):
     context_object_name = "user_mail_create"
 
     form_class = UserMailForm
-    success_url = reverse_lazy("mailing_service:home")
+    success_url = reverse_lazy("mailing_service:user_mail_detail")
 
     def form_valid(self, form):
         mailing = form.save()
@@ -146,7 +162,7 @@ class UserMailUpdateView(LoginRequiredMixin, UpdateView):
     form_class = UserMailForm
 
     def get_success_url(self):
-        return reverse("mailing_service:user_mail_detail", args=[self.kwargs.get("pk")])
+        return reverse("mailing_service:user_mail_detail")
 
     def get_form_class(self):
         """
@@ -166,7 +182,7 @@ class UserMailDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "mailing_service/user_mail_confirm_delete.html"
     context_object_name = "user_mail_delete"
 
-    success_url = reverse_lazy("mailing_service:home")
+    success_url = reverse_lazy("mailing_service:user_mail_detail")
 
     def get_form_class(self):
         user = self.request.user
@@ -175,18 +191,26 @@ class UserMailDeleteView(LoginRequiredMixin, DeleteView):
         raise PermissionDenied
 
 
-class MessageDetailView(LoginRequiredMixin, DetailView):
+class MessageDetailView(LoginRequiredMixin, ListView):
     """Класс представления писем"""
 
     model = Message
     template_name = "mailing_service/message_detail.html"
     context_object_name = "message_detail"
 
-    def get_object(self, queryset=None):
-        self.object = super().get_object(queryset)
-        if self.object.owner == self.request.user:
-            return self.object
-        raise PermissionDenied
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            context['message_owner_user'] = Message.objects.filter(owner=self.request.user)
+
+        return context
+
+    # def get_object(self, queryset=None):
+    #     self.object = super().get_object(queryset)
+    #     if self.object.owner == self.request.user:
+    #         return self.object
+    #     raise PermissionDenied
 
     # def get_queryset(self):
     #     """
@@ -207,7 +231,7 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
     context_object_name = "message_create"
 
     form_class = MessageForm
-    success_url = reverse_lazy("mailing_service:home")
+    success_url = reverse_lazy("mailing_service:message_detail")
 
     def form_valid(self, form):
         mailing = form.save()
@@ -228,7 +252,7 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
     form_class = MessageForm
 
     def get_success_url(self):
-        return reverse("mailing_service:message_detail", args=[self.kwargs.get("pk")])
+        return reverse("mailing_service:message_detail")
 
     def get_form_class(self):
         """
@@ -247,7 +271,7 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     context_object_name = "message_delete"
 
-    success_url = reverse_lazy("mailing_service:home")
+    success_url = reverse_lazy("mailing_service:message_detail")
 
     def get_form_class(self):
         user = self.request.user

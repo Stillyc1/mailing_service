@@ -1,6 +1,6 @@
 {% extends 'mailing_service/basic_design.html' %}
 {% load my_tags %}
-{% block title %}Главная страница{% endblock %}
+{% block title %}Получатель{% endblock %}
 
 {% block header %}
 {% include 'mailing_service/includes/header_menu.html' %}
@@ -9,29 +9,42 @@
     <p class="lead">SendMail - это отличный вариант создания кампаний для презентаций ваших продуктов и рекламных
         рассылок</p>
     {% if user.is_authenticated %}
-    <a class="btn btn-lg btn-block btn-outline-primary" href="{% url 'mailing_service:mailing_update' mailing_detail.pk%}">Изменить рассылку</a>
+        <a class="btn btn-lg btn-block btn-outline-primary" href="{% url 'mailing_service:mailing_add' %}">Создать рассылку</a>
     {% endif %}
 </div>
 
 {% endblock %}
 
 {% block content %}
-<div class="row text-center">
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">Тема письма: {{ mailing_detail.message }}</h4>
-        </div>
-        <div class="card-body">
-            <p class="card-title pricing-card-title">Дата и время первой отправки: {{ mailing_detail.date_start|date:"d M Y h:m:s" }}</p>
-            <p class="card-title pricing-card-title">Дата и время окончания отправки: {{ mailing_detail.date_end|date:"d M Y h:m:s" }}</p>
-            <p class="card-title pricing-card-title">Статус: {{ mailing_detail.status }}</p>
-            <p class="card-title pricing-card-title">Количество получателей - {{ mailing_detail.user_mail.count }}</p>
-        </div>
-    </div>
-</div>
-<div class="pricing-header mx-auto text-center">
-    {% if user.is_authenticated %}
-    <a class="btn btn-lg btn-block btn-outline-danger" href="{% url 'mailing_service:mailing_delete' mailing_detail.pk%}">Удалить</a>
-    {% endif %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Дата первой отправки</th>
+        <th scope="col">Дата окончания</th>
+        <th scope="col">Статус</th>
+        <th scope="col">Сообщение</th>
+        <th scope="col">Получатели</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for mailing in mailing_owner_user %}
+            <tr>
+            <td>{{ mailing.date_start }}</td>
+            <td>{{ mailing.date_end }}</td>
+            <td>{{ mailing.status }}</td>
+            <td>{{ mailing.message }}</td>
+            <td>{{ mailing.user_mail }}</td>
+            <td>
+                {% if user.is_authenticated %}
+                    <a class="btn btn-lg btn-block btn-outline-primary" href="{% url 'mailing_service:mailing_update' mailing.pk%}">Изменить</a>
+                    <a class="btn btn-lg btn-block btn-outline-danger" href="{% url 'mailing_service:mailing_delete' mailing.pk%}">Удалить</a>
+                {% endif %}
+            </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}

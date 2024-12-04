@@ -103,8 +103,8 @@ class MailingAttempt(models.Model):
         max_length=14,
         verbose_name="Статус",
         choices=[
-            ("Success", "Успешно"),
-            ("Not successful", "Не успешно"),
+            ("Успешно", "Успешно"),
+            ("Не успешно", "Не успешно"),
         ],
     )
     mail_response = models.TextField(verbose_name="Ответ почтового сервиса")
