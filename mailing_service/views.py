@@ -1,14 +1,22 @@
+import os
+import smtplib
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-                                  UpdateView)
+                                  UpdateView, TemplateView)
+from dotenv import load_dotenv
 
 from mailing_service.forms import MailingForm, MessageForm, UserMailForm
 from mailing_service.models import Mailing, MailingAttempt, Message, UserMail
 from users.models import CustomUser
+
+load_dotenv(override=True)
 
 
 class MailingView(ListView):
@@ -26,12 +34,64 @@ class MailingView(ListView):
 
         if self.request.user.is_authenticated:
             context['user_usermail'] = UserMail.objects.filter(owner=self.request.user)
-            context['user_message'] = Message.objects.filter(owner=self.request.user)
             context['user_mailing_started'] = Mailing.objects.filter(owner=self.request.user, status='Запущена')
             context['user_mailing'] = Mailing.objects.filter(owner=self.request.user)
-            context['user_mailingattempt'] = MailingAttempt.objects.filter(owner=self.request.user)
 
         return context
+
+
+class MailingStopSendView(LoginRequiredMixin, DetailView):
+    model = Mailing
+    template_name = "mailing_service/mailing_stop.html"
+    context_object_name = "mailing_stop"
+
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        if self.request.user.has_perm("can_stop_mailing"):
+            self.object.status = "Отключена"
+            self.object.save()
+        return self.object
+
+
+class MailingSendView(LoginRequiredMixin, DetailView):
+    model = Mailing
+    template_name = "mailing_service/mailing_send.html"
+    context_object_name = "mailing_send"
+
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        obj = self.object
+
+        if obj.owner == self.request.user and obj.status == "Создана":
+            try:
+                email = [user_mail.email for user_mail in obj.user_mail.all()]
+
+                obj.date_start = timezone.now()
+                obj.status = 'Запущена'
+                obj.save()
+
+                server_response = send_mail(
+                    subject=f'{obj.message.head_letter}',
+                    message=f'{obj.message.body_letter}',
+                    recipient_list=email,
+                    fail_silently=False,
+                    from_email=os.getenv('EMAIL_HOST_USER')
+                )
+
+                obj.date_end = timezone.now()
+                obj.status = 'Завершена'
+                obj.save()
+
+                mailing_attempt = MailingAttempt.objects.create(mailing=obj, mail_response=server_response, owner=self.request.user)
+                if server_response:
+                    mailing_attempt.status = 'Успешно'
+                else:
+                    mailing_attempt.status = 'Не успешно'
+                mailing_attempt.save()
+
+            except smtplib.SMTPException as error:
+                MailingAttempt.objects.create(mailing=obj, mail_response=error, status='Не успешно')
+        return obj
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
@@ -53,7 +113,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MailingDetailView(LoginRequiredMixin, ListView):
+class MailingListView(LoginRequiredMixin, ListView):
     """Класс представления детальной рассылки"""
 
     model = Mailing
@@ -212,12 +272,6 @@ class MessageDetailView(LoginRequiredMixin, ListView):
             return Message.objects.all()
         return Message.objects.filter(owner=user)
 
-    # def get_object(self, queryset=None):
-    #     self.object = super().get_object(queryset)
-    #     if self.object.owner == self.request.user:
-    #         return self.object
-    #     raise PermissionDenied
-
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
     """Класс представления создания писем"""
@@ -309,7 +363,7 @@ class UserRegisterView(LoginRequiredMixin, ListView):
 
 
 class UserBanView(LoginRequiredMixin, DeleteView):
-    """Класс представления Всех рассылок на главной странице"""
+    """Класс представления блокировки пользователей, администратором"""
 
     model = CustomUser
     template_name = "mailing_service/user_register_ban.html"

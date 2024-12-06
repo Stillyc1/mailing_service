@@ -25,7 +25,7 @@
         <tbody>
         {% for attempt in mailing_attempt %}
         <tr>
-            <td>{{ attempt.datetime_attempt }}</td>
+            <td>{{ attempt.datetime_attempt|date:"d.m.Y H:i:s" }}</td>
             <td>{{ attempt.status }}</td>
             <td>{{ attempt.mail_response }}</td>
             <td>{{ attempt.mailing }}</td>
