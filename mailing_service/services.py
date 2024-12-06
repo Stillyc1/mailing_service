@@ -1,44 +1,48 @@
 import os
-import smtplib
 
 from django.core.mail import send_mail
 from django.utils import timezone
 from dotenv import load_dotenv
 
-from mailing_service.models import Mailing, MailingAttempt
+from mailing_service.models import MailingAttempt
 
 load_dotenv(override=True)
 
 
-class SendMailing:
+class FormValid:
+    def form_valid(self, form):
+        mailing = form.save()
+        user = self.request.user
+        mailing.owner = user
 
-    def send_mailing(self, user):
-        for obj in Mailing.objects.filter(status='Создана', owner=user):
-            try:
-                email = [user_mail.email for user_mail in obj.user_mail.all()]
+        mailing.save()
+        return super().form_valid(form)
 
-                obj.date_start = timezone.now()
-                obj.status = 'Запущена'
-                obj.save()
 
-                server_response = send_mail(
-                    subject=f'{obj.message.head_letter}',
-                    message=f'{obj.message.body_letter}',
-                    recipient_list=email,
-                    fail_silently=False,
-                    from_email=os.getenv('EMAIL_HOST_USER')
-                )
+def send_mailing(self):
+    """Функция отправки сообщений по рассылке"""
+    email = [user_mail.email for user_mail in self.object.user_mail.all()]
 
-                obj.date_end = timezone.now()
-                obj.status = 'Завершена'
-                obj.save()
+    self.object.date_start = timezone.now()
+    self.object.status = 'Запущена'
+    self.object.save()
 
-                mailing_attempt = MailingAttempt.objects.create(mailing=obj, mail_response=server_response)
-                if server_response:
-                    mailing_attempt.status = 'Успешно'
-                else:
-                    mailing_attempt.status = 'Не успешно'
-                mailing_attempt.save()
+    server_response = send_mail(
+        subject=f'{self.object.message.head_letter}',
+        message=f'{self.object.message.body_letter}',
+        recipient_list=email,
+        fail_silently=False,
+        from_email=os.getenv('EMAIL_HOST_USER')
+    )
 
-            except smtplib.SMTPException as error:
-                MailingAttempt.objects.create(mailing=obj, mail_response=error, status='Не успешно')
+    self.object.date_end = timezone.now()
+    self.object.status = 'Завершена'
+    self.object.save()
+
+    mailing_attempt = MailingAttempt.objects.create(mailing=self.object, mail_response=server_response,
+                                                    owner=self.request.user)
+    if server_response:
+        mailing_attempt.status = 'Успешно'
+    else:
+        mailing_attempt.status = 'Не успешно'
+    mailing_attempt.save()

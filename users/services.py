@@ -22,7 +22,6 @@ class FormClean:
         cleaned_data = super().clean()
         username = cleaned_data.get("username")
         email = cleaned_data.get("email")
-        country = cleaned_data.get("country")
 
         banned_words = [
             "казино",
@@ -46,10 +45,4 @@ class FormClean:
                 self.add_error(
                     "email",
                     f'Нельзя использовать слово "{word.title()}" в email.',
-                )
-        for word in banned_words:
-            if word in country.lower():
-                self.add_error(
-                    "country",
-                    f'Нельзя использовать слово "{word.title()}" в поле country.',
                 )

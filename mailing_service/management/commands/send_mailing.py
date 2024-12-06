@@ -8,7 +8,6 @@ from django.core.management.base import BaseCommand
 import os
 from dotenv import load_dotenv
 
-from config import settings
 from mailing_service.models import Mailing, MailingAttempt
 
 load_dotenv(override=True)
@@ -16,7 +15,6 @@ load_dotenv(override=True)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
         for obj in Mailing.objects.filter(status='Создана'):
             try:
                 email = [user_mail.email for user_mail in obj.user_mail.all()]

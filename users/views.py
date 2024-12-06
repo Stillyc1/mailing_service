@@ -116,7 +116,7 @@ class EmailConfirmedView(TemplateView):
 
 
 class EmailConfirmationFailedView(TemplateView):
-    """Подтверждение что не активирован аккаунт"""
+    """Подтверждение, что не активирован аккаунт"""
     template_name = 'users/email_confirmation_failed.html'
 
     def get_context_data(self, **kwargs):

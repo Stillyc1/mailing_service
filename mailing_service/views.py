@@ -7,13 +7,14 @@ from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-                                  UpdateView, TemplateView)
+                                  UpdateView)
 from dotenv import load_dotenv
 
 from mailing_service.forms import MailingForm, MessageForm, UserMailForm
 from mailing_service.models import Mailing, MailingAttempt, Message, UserMail
+from mailing_service.services import send_mailing
+
 from users.models import CustomUser
 
 load_dotenv(override=True)
@@ -41,6 +42,7 @@ class MailingView(ListView):
 
 
 class MailingStopSendView(LoginRequiredMixin, DetailView):
+    """Класс отключения рассылок администратором"""
     model = Mailing
     template_name = "mailing_service/mailing_stop.html"
     context_object_name = "mailing_stop"
@@ -60,38 +62,13 @@ class MailingSendView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)
-        obj = self.object
 
-        if obj.owner == self.request.user and obj.status == "Создана":
+        if self.object.owner == self.request.user and self.object.status == "Создана":
             try:
-                email = [user_mail.email for user_mail in obj.user_mail.all()]
-
-                obj.date_start = timezone.now()
-                obj.status = 'Запущена'
-                obj.save()
-
-                server_response = send_mail(
-                    subject=f'{obj.message.head_letter}',
-                    message=f'{obj.message.body_letter}',
-                    recipient_list=email,
-                    fail_silently=False,
-                    from_email=os.getenv('EMAIL_HOST_USER')
-                )
-
-                obj.date_end = timezone.now()
-                obj.status = 'Завершена'
-                obj.save()
-
-                mailing_attempt = MailingAttempt.objects.create(mailing=obj, mail_response=server_response, owner=self.request.user)
-                if server_response:
-                    mailing_attempt.status = 'Успешно'
-                else:
-                    mailing_attempt.status = 'Не успешно'
-                mailing_attempt.save()
-
+                send_mailing(self)  # Функция в разделе сервисы, отправляет сообщения по рассылке
             except smtplib.SMTPException as error:
-                MailingAttempt.objects.create(mailing=obj, mail_response=error, status='Не успешно')
-        return obj
+                MailingAttempt.objects.create(mailing=self.object, mail_response=error, status='Не успешно')
+        return self.object
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):

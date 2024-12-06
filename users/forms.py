@@ -64,7 +64,7 @@ class ProfileForm(FormClean, forms.ModelForm):
         return phone_number
 
     def clean(self):
-        """Валидация на проверку полей (чтобы не было запрещзенных слов)"""
+        """Валидация на проверку полей (чтобы не было запрещенных слов)"""
         super().clean()
 
 
@@ -82,7 +82,7 @@ class LoginUserForm(AuthenticationForm):
         })
 
 
-class CustomUserCreationForm(UserCreationForm):
+class CustomUserCreationForm(FormClean, UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
@@ -107,31 +107,5 @@ class CustomUserCreationForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2',)
 
     def clean(self):
-        """Валидация данных сообщения (не должны иметь запрещенные слова)"""
-        cleaned_data = super().clean()
-        username = cleaned_data.get("username")
-        email = cleaned_data.get("email")
-
-        banned_words = [
-            "казино",
-            "криптовалюта",
-            "крипта",
-            "биржа",
-            "дешево",
-            "бесплатно",
-            "обман",
-            "полиция",
-            "радар",
-        ]
-
-        for word in banned_words:
-            if word in username.lower():
-                self.add_error(
-                    "username",
-                    f'Нельзя использовать слово "{word.title()}" в поле username.',
-                )
-            if word in email.lower():
-                self.add_error(
-                    "email",
-                    f'Нельзя использовать слово "{word.title()}" в email.',
-                )
+        """Валидация на проверку полей (чтобы не было запрещзенных слов)"""
+        super().clean()

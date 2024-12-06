@@ -124,7 +124,8 @@ class MailingAttempt(models.Model):
         related_name="mailing_attempts",
         verbose_name="Рассылка",
     )
-    owner = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, related_name='MailingAttempt', blank=True, null=True,
+    owner = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, related_name='MailingAttempt', blank=True,
+                              null=True,
                               verbose_name='Владелец')
 
     def __str__(self):
