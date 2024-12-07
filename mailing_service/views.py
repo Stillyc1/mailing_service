@@ -7,13 +7,15 @@ from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
 from dotenv import load_dotenv
 
 from mailing_service.forms import MailingForm, MessageForm, UserMailForm
 from mailing_service.models import Mailing, MailingAttempt, Message, UserMail
-from mailing_service.services import send_mailing
+from mailing_service.services import send_mailing, GetListMailing
 
 from users.models import CustomUser
 
@@ -39,6 +41,10 @@ class MailingView(ListView):
             context['user_mailing'] = Mailing.objects.filter(owner=self.request.user)
 
         return context
+
+    def get_queryset(self):
+        """Настройка серверного кэширования главной страницы"""
+        return GetListMailing.get_list_mailing_from_cache()
 
 
 class MailingStopSendView(LoginRequiredMixin, DetailView):
@@ -90,6 +96,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+@method_decorator(cache_page(60), name='dispatch')
 class MailingListView(LoginRequiredMixin, ListView):
     """Класс представления детальной рассылки"""
 
@@ -156,6 +163,7 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
         raise PermissionDenied
 
 
+@method_decorator(cache_page(60), name='dispatch')
 class UserMailDetailView(LoginRequiredMixin, ListView):
     """Класс представления детально получателя рассылки"""
 
@@ -235,6 +243,7 @@ class UserMailDeleteView(LoginRequiredMixin, DeleteView):
         raise PermissionDenied
 
 
+@method_decorator(cache_page(60), name='dispatch')
 class MessageDetailView(LoginRequiredMixin, ListView):
     """Класс представления писем"""
 
@@ -307,6 +316,7 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
         raise PermissionDenied
 
 
+@method_decorator(cache_page(60), name='dispatch')
 class MailingAttemptView(LoginRequiredMixin, ListView):
     """Класс представления Всех рассылок на главной странице"""
 

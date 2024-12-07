@@ -2,9 +2,12 @@ import os
 
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.core.cache import cache
+
 from dotenv import load_dotenv
 
-from mailing_service.models import MailingAttempt
+from config.settings import CACHE_ENABLED
+from mailing_service.models import MailingAttempt, Mailing
 
 load_dotenv(override=True)
 
@@ -46,3 +49,21 @@ def send_mailing(self):
     else:
         mailing_attempt.status = 'Не успешно'
     mailing_attempt.save()
+
+
+class GetListMailing:
+    """Класс обработки получения списка продуктов"""
+    @staticmethod
+    def get_list_mailing_from_cache():
+        """Метод получает данные от БД, если списка продуктов нет в кэше, то добавляет его и возвращает список"""
+        if not CACHE_ENABLED:
+            return Mailing.objects.all()
+        key = 'mailing_list'
+        mailing = cache.get(key)
+
+        if mailing is not None:
+            return mailing
+        products = Mailing.objects.all()
+        cache.set(key, products)
+        return products
+
