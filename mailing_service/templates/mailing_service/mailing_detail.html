@@ -46,7 +46,11 @@
                 <td class="text-danger">{{ mailing.status }}</td>
             {% endif %}
             <td>{{ mailing.message }}</td>
-            <td width="300">{{ mailing.user_mail.all }}</td>
+            <td width="300">
+                {% for usering in mailing.user_mail.values %}
+                    <p>{{ usering.email }}</p>
+                {% endfor %}
+            </td>
             {% if mailing.owner == user and mailing.status == "Создана" %}
                 <td scope="col"><a href="{% url 'mailing_service:mailing_send' mailing.pk %}" class="btn btn-outline-success">Запустить</a></td>
             {% elif mailing.status == "Завершена" or mailing.status == "Отключена"%}
