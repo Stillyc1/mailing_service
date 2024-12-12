@@ -66,4 +66,3 @@ class GetListMailing:
         products = Mailing.objects.all()
         cache.set(key, products)
         return products
-

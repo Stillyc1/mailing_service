@@ -16,6 +16,7 @@ class MailingForm(ModelForm):
         )
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super(MailingForm, self).__init__(*args, **kwargs)
 
         self.fields["message"].widget.attrs.update(
@@ -24,6 +25,9 @@ class MailingForm(ModelForm):
         self.fields["user_mail"].widget.attrs.update(
             {"class": "form-select", "placeholder": "Выберите получателей"}
         )
+        if user:
+            self.fields["message"].queryset = Message.objects.filter(owner=user)
+            self.fields["user_mail"].queryset = UserMail.objects.filter(owner=user)
 
 
 class UserMailForm(ModelForm):

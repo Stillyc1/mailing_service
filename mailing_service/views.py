@@ -95,8 +95,14 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         mailing.save()
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        # Передаем текущего пользователя в форму
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
-@method_decorator(cache_page(60), name='dispatch')
+
+# @method_decorator(cache_page(60), name='dispatch')
 class MailingListView(LoginRequiredMixin, ListView):
     """Класс представления детальной рассылки"""
 
@@ -145,6 +151,12 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
         if user == self.object.owner:
             return MailingForm
         raise PermissionDenied
+
+    def get_form_kwargs(self):
+        # Передаем текущего пользователя в форму
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 class MailingDeleteView(LoginRequiredMixin, DeleteView):
