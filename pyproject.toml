@@ -12,6 +12,12 @@ flake8 = "^7.1.1"
 mypy = "^1.13.0"
 black = "^24.10.0"
 isort = "^5.13.2"
+python-dotenv = "^1.0.1"
+psycopg2 = "^2.9.10"
+requests = "^2.32.3"
+pillow = "^11.0.0"
+ipython = "^8.29.0"
+redis = "^5.2.0"
 
 
 [build-system]
